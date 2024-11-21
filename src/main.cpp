@@ -46,7 +46,7 @@ int main()
     
 
 
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 1000; i++) {
      srukf.predict(Eigen::Vector<double, 2>(0.1, 0.1), 0.1);
      srukf.update(Eigen::Vector<double, 2>(1, 1), 0.00002);
    }
