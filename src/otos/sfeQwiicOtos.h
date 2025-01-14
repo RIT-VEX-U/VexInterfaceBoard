@@ -4,7 +4,7 @@
 #include "sfeError.h"
 #include "pico.h"
 #include "pico/stdlib.h"
-#include "hardware_i2c/include/hardware/i2c.h"
+#include "hardware/i2c.h"
 
 #define PRODUCT_ID 0x5F
 

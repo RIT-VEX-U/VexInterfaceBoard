@@ -15,9 +15,9 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.0.0)
-set(toolchainVersion 13_2_Rel1)
-set(picotoolVersion 2.0.0)
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
@@ -33,7 +33,7 @@ project(VexInterfaceBoard C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-file(GLOB SOURCES "src/*" "Eigen/*")
+file(GLOB_RECURSE SOURCES "src/*" "Eigen/*")
 add_executable(VexInterfaceBoard ${SOURCES})
 
 # Add executable. Default name is the project name, version 0.1
@@ -48,7 +48,7 @@ pico_enable_stdio_usb(VexInterfaceBoard 1)
 
 # Add the standard library to the build
 target_link_libraries(VexInterfaceBoard
-        pico_stdlib)
+        pico_stdlib hardware_i2c)
 
 # Add the standard include files to the build
 target_include_directories(VexInterfaceBoard PRIVATE
