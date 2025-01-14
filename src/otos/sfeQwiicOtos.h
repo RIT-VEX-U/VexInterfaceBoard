@@ -243,7 +243,7 @@ class Otos {
     public:
     Otos();
     
-    //sfeError_t begin(i2cbus)
+    sfeError_t begin(i2c_inst_t *comm_bus = nullptr);
 
     sfeError_t is_connected();
 
@@ -313,7 +313,7 @@ class Otos {
 
     void pose_to_regs(uint8_t *raw, otos_pose2d_t &pose, float xy_to_raw, float h_to_raw);
 
-    // i2cbus
+    i2c_inst_t *_comm_bus;
 
     linear_unit_t _linear_unit;
     angular_unit_t _angular_unit;
