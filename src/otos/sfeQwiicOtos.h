@@ -12,7 +12,6 @@
 #define HARDWARE_VERSION 0x01
 #define FIRMWARE VERSION 0x02
 
-
 #define LINEAR_SCALAR 0x04
 #define ANGULAR_SCALAR 0x05
 #define IMU_CALIBRATION 0x06
@@ -113,7 +112,7 @@
 #define RADIAN_TO_DEGREE 57.296f
 #define DEGREE_TO_RADIAN 0.0174f
 
-#define M_PI		3.14159265358979323846
+#define M_PI 3.14159265358979323846
 
 // Conversion factor for the linear position registers. 16-bit signed
 // registers with a max value of 10 meters (394 inches) gives a resolution
@@ -151,8 +150,8 @@
 #define RPSS_TO_INT16 (32768.0f / (M_PI * 1000.0f))
 #define INT16_TO_RPSS (1.0f / RPSS_TO_INT16)
 
-
-typedef struct {
+typedef struct
+{
     float x;
     float y;
     float h;
@@ -164,19 +163,22 @@ typedef enum
     kInches = 1
 } linear_unit_t;
 
-typedef enum {
+typedef enum
+{
     kRadians = 0,
     kDegrees = 1
 } angular_unit_t;
 
 // version
-typedef union {
-    struct {
+typedef union
+{
+    struct
+    {
         // minor version number
         uint8_t minor : 4;
 
         // major version number
-        uint8_t major: 4;
+        uint8_t major : 4;
     };
 
     // raw register value
@@ -184,8 +186,10 @@ typedef union {
 } version_t;
 
 // signal process config
-typedef union {
-    struct {
+typedef union
+{
+    struct
+    {
         // enable lookup table
         uint8_t enLut : 1;
         // enable accelerometer
@@ -203,8 +207,10 @@ typedef union {
 } signal_process_config_t;
 
 // self test
-typedef union {
-    struct {
+typedef union
+{
+    struct
+    {
         // write 1 to start self test
         uint8_t start : 1;
         // returns 1 while self test in progress
@@ -221,8 +227,10 @@ typedef union {
     uint8_t value;
 } self_test_config_t;
 
-typedef union {
-    struct {
+typedef union
+{
+    struct
+    {
         // returns 1 if tilt angle threshold exceeded, while set accel data is ignored
         uint8_t warnTiltAngle : 1;
         // returns 1 if optical data is unreliable, while set only IMU data is used
@@ -239,10 +247,11 @@ typedef union {
     uint8_t value;
 } otos_status_t;
 
-class Otos {
-    public:
+class Otos
+{
+public:
     Otos();
-    
+
     sfeError_t begin(i2c_inst_t *comm_bus = nullptr);
 
     sfeError_t is_connected();
@@ -301,10 +310,7 @@ class Otos {
 
     sfeError_t get_pos_vel_acc_and_stddev(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc, otos_pose2d_t &posstddev, otos_pose2d_t &velstddev, otos_pose2d_t &accstddev);
 
-    
-
-
-    protected:
+protected:
     sfeError_t read_pose_regs(uint8_t reg, otos_pose2d_t &pose, float raw_to_xy, float raw_to_h);
 
     sfeError_t write_pose_regs(uint8_t reg, otos_pose2d_t &pose, float xy_to_raw, float h_to_raw);
@@ -320,7 +326,4 @@ class Otos {
 
     float _meter_to_unit;
     float _rad_to_unit;
-
-
-
 };

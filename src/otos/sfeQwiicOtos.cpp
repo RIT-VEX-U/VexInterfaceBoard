@@ -15,7 +15,6 @@ sfeError_t Otos::begin(i2c_inst_t *comm_bus) {
 }
 
 sfeError_t Otos::is_connected() {
-    // try to read the product id
     uint8_t product_id[1];
     i2c_read_blocking(_comm_bus, PRODUCT_IDREG, product_id, 1, false);
 
@@ -27,7 +26,6 @@ sfeError_t Otos::is_connected() {
 }
 
 sfeError_t Otos::get_version_info(version_t &hw_version, version_t &fw_version) {
-    // read versions
     uint8_t raw_data[2];
     size_t read_bytes;
     
