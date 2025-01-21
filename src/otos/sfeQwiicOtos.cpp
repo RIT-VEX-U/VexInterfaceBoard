@@ -1,10 +1,13 @@
 #include "sfeQwiicOtos.h"
+#include <iostream>
 
 Otos::Otos() :_comm_bus{nullptr}, _linear_unit{kMeters}, _angular_unit{kRadians}, _meter_to_unit{1}, _rad_to_unit{1} {}
 
 sfeError_t Otos::begin(i2c_inst_t *comm_bus) {
-    if (comm_bus == nullptr)
+    if (comm_bus == nullptr){
+        printf("nullpointered\n");
         return kErrFail;
+    }
     
     if (I2C_ADDR != I2C_ADDR)
         return kErrFail;
@@ -16,9 +19,12 @@ sfeError_t Otos::begin(i2c_inst_t *comm_bus) {
 
 sfeError_t Otos::is_connected() {
     uint8_t product_id[1];
-    i2c_read_blocking(_comm_bus, PRODUCT_IDREG, product_id, 1, false);
+    uint8_t reg = PRODUCT_IDREG;
+    read_i2c(PRODUCT_IDREG, product_id, 1);
 
     if (*product_id != PRODUCT_ID) {
+
+        printf("wrong productid %d\n", *product_id);
         return kErrFail;
     }
 
@@ -27,9 +33,8 @@ sfeError_t Otos::is_connected() {
 
 sfeError_t Otos::get_version_info(version_t &hw_version, version_t &fw_version) {
     uint8_t raw_data[2];
-    size_t read_bytes;
     
-    i2c_read_blocking(_comm_bus, HARDWARE_VERSION, raw_data, 2, false);
+    read_i2c(HARDWARE_VERSION, raw_data, 2);
 
     hw_version.value = raw_data[0];
     fw_version.value = raw_data[1];
@@ -41,13 +46,13 @@ sfeError_t Otos::self_test() {
     self_test_config_t self_test;
 
     self_test.start = 1;
-
-    i2c_write_blocking(_comm_bus, SELF_TEST, &self_test.value, 1, true);
+    
+    write_i2c(SELF_TEST, &self_test.value, 1);
 
     for (int i = 0; i < 10; i++) {
         sleep_ms(5);
 
-        i2c_read_blocking(_comm_bus, SELF_TEST, &self_test.value, 1, false);
+        read_i2c(SELF_TEST, &self_test.value, 1);
 
         if (self_test.inProgress == 0) {
             break;
@@ -59,7 +64,7 @@ sfeError_t Otos::self_test() {
 }
 
 sfeError_t Otos::calibrate_imu(uint8_t num_samples, bool wait_until_done) {
-    i2c_write_blocking(_comm_bus, IMU_CALIBRATION, &num_samples, 1, true);
+    write_i2c(IMU_CALIBRATION, &num_samples, 1);
 
     sleep_ms(3);
 
@@ -69,7 +74,7 @@ sfeError_t Otos::calibrate_imu(uint8_t num_samples, bool wait_until_done) {
 
     for (uint8_t num_attempts = num_samples; num_attempts > 0; num_attempts--) {
         uint8_t calibration_value;
-        i2c_read_blocking(_comm_bus, IMU_CALIBRATION, &calibration_value, 1, false);
+        read_i2c(IMU_CALIBRATION, &calibration_value, 1);
 
         if (calibration_value == 0) {
             return kErrOkay;
@@ -84,7 +89,8 @@ sfeError_t Otos::calibrate_imu(uint8_t num_samples, bool wait_until_done) {
 }
 
 sfeError_t Otos::get_imu_calibration_progress(uint8_t &num_samples) {
-    int err = i2c_read_blocking(_comm_bus, IMU_CALIBRATION, &num_samples, 1, false);
+
+    int err = read_i2c(IMU_CALIBRATION, &num_samples, 1);
     return err == -1 ? kErrFail : kErrOkay;
 }
 
@@ -118,7 +124,7 @@ void Otos::set_angular_unit(angular_unit_t unit) {
 
 sfeError_t Otos::get_linear_scalar(float &scalar) {
     uint8_t raw_scalar;
-    int err = i2c_read_blocking(_comm_bus, LINEAR_SCALAR, &raw_scalar, 1, false);
+    int err = read_i2c(LINEAR_SCALAR, &raw_scalar, 1);
     if (err == -1)
         return kErrFail;
 
@@ -133,14 +139,14 @@ sfeError_t Otos::set_linear_scalar(float scalar) {
 
     uint8_t raw_scalar = (int8_t)((scalar - 1.0f) * 1000 + 0.5f);
 
-    int err = i2c_write_blocking(_comm_bus, LINEAR_SCALAR, &raw_scalar, 1, true);
+    int err = write_i2c(LINEAR_SCALAR, &raw_scalar, 1);
 
     return err == -1 ? kErrFail : kErrOkay;
 }
 
 sfeError_t Otos::get_angular_scalar(float &scalar) {
     uint8_t raw_scalar;
-    int err = i2c_read_blocking(_comm_bus, ANGULAR_SCALAR, &raw_scalar, 1, false);
+    int err = read_i2c(ANGULAR_SCALAR, &raw_scalar, 1);
     if (err == -1)
         return kErrFail;
 
@@ -155,30 +161,30 @@ sfeError_t Otos::set_angular_scalar(float scalar) {
 
     uint8_t raw_scalar = (int8_t)((scalar - 1.0f) * 1000 + 0.5f);
 
-    int err = i2c_write_blocking(_comm_bus, ANGULAR_SCALAR, &raw_scalar, 1, true);
+    int err = write_i2c(ANGULAR_SCALAR, &raw_scalar, 1);
 
     return err == -1 ? kErrFail : kErrOkay;
 }
 
 sfeError_t Otos::reset_tracking() {
     uint8_t reset_flag = 0x01;
-    int err = i2c_write_blocking(_comm_bus, RESET, &reset_flag, 1, true);
+    int err = write_i2c(RESET, &reset_flag, 1);
     
     return err == -1 ? kErrFail : kErrOkay;
 }
 
 sfeError_t Otos::get_signal_process_config(signal_process_config_t &config) {
-    int err = i2c_read_blocking(_comm_bus, SIGNAL_PROCESS_CONFIG, &config.value, 1, false);
+    int err = read_i2c(SIGNAL_PROCESS_CONFIG, &config.value, 1);
     return err == -1 ? kErrFail : kErrOkay;
 }
 
 sfeError_t Otos::set_signal_process_config(signal_process_config_t &config) {
-    int err = i2c_write_blocking(_comm_bus, SIGNAL_PROCESS_CONFIG, &config.value, 1, true);
+    int err = write_i2c(SIGNAL_PROCESS_CONFIG, &config.value, 1);
     return err == -1 ? kErrFail : kErrOkay;
 }
 
 sfeError_t Otos::get_status(otos_status_t &status) {
-    int err = i2c_read_blocking(_comm_bus, STATUS, &status.value, 1, false);
+    int err = read_i2c(STATUS, &status.value, 1);
     return err == -1 ? kErrFail : kErrOkay;
 }
 
@@ -221,7 +227,7 @@ sfeError_t Otos::get_acceleration_stddev(otos_pose2d_t &pose) {
 sfeError_t Otos::get_pos_vel_acc(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc) {
     uint8_t raw[18];
     size_t bytes_read;
-    int err = i2c_read_blocking(_comm_bus, POSITIONX_L, raw, 18, false);
+    int err = read_i2c(POSITIONX_L, raw, 18);
 
     if (err == -1 || err != 18) {
         return kErrFail;
@@ -237,7 +243,7 @@ sfeError_t Otos::get_pos_vel_acc(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_po
 sfeError_t Otos::get_pos_vel_acc_stddev(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc) {
     uint8_t raw[18];
     size_t bytes_read;
-    int err = i2c_read_blocking(_comm_bus, POSITION_STDDEVX_L, raw, 18, false);
+    int err = read_i2c(POSITION_STDDEVX_L, raw, 18);
 
     if (err == -1 || err != 18) {
         return kErrFail;
@@ -253,7 +259,7 @@ sfeError_t Otos::get_pos_vel_acc_stddev(otos_pose2d_t &pos, otos_pose2d_t &vel, 
 sfeError_t Otos::get_pos_vel_acc_and_stddev(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc, otos_pose2d_t &posstddev, otos_pose2d_t &velstddev, otos_pose2d_t &accstddev) {
     uint8_t raw[36];
     size_t bytes_read;
-    int err = i2c_read_blocking(_comm_bus, POSITIONX_L, raw, 36, false);
+    int err = read_i2c(POSITIONX_L, raw, 36);
 
     if (err == -1 || err != 36) {
         return kErrFail;
@@ -270,10 +276,9 @@ sfeError_t Otos::get_pos_vel_acc_and_stddev(otos_pose2d_t &pos, otos_pose2d_t &v
 }
 
 sfeError_t Otos::read_pose_regs(uint8_t reg, otos_pose2d_t &pose, float raw_to_xy, float raw_to_h) {
-    size_t bytes_read;
     uint8_t raw_data[6];
 
-    int err = i2c_read_blocking(_comm_bus, reg, raw_data, 6, false);
+    int err = read_i2c(reg, raw_data, 6);
     if (err == -1 || err != 6)
         return kErrFail;
 
@@ -287,7 +292,7 @@ sfeError_t Otos::write_pose_regs(uint8_t reg, otos_pose2d_t &pose, float xy_to_r
     uint8_t raw_data[6];
     pose_to_regs(raw_data, pose, xy_to_raw, h_to_raw);
 
-    int err = i2c_write_blocking(_comm_bus, reg, raw_data, 6, true);
+    int err = write_i2c(reg, raw_data, 6);
     return err == -1 ? kErrFail : kErrOkay;
 }
 
@@ -295,6 +300,8 @@ void Otos::regs_to_pose(uint8_t *raw, otos_pose2d_t &pose, float raw_to_xy, floa
     int16_t raw_x = (raw[1] << 8) | raw[0];
     int16_t raw_y = (raw[3] << 8) | raw[2];
     int16_t raw_h = (raw[5] << 8) | raw[4];
+
+    // printf("rawx %d rawy %d rawh %d\n", raw_x, raw_y, raw_h);
 
     pose.x = raw_x * raw_to_xy * _meter_to_unit;
     pose.y = raw_y * raw_to_xy * _meter_to_unit;
@@ -312,4 +319,14 @@ void Otos::pose_to_regs(uint8_t *raw, otos_pose2d_t &pose, float xy_to_raw, floa
     raw[3] = (rawy >> 8) & 0xFF;
     raw[4] = rawh & 0xFF;
     raw[5] = (rawh >> 8) & 0xFF;
+}
+
+int Otos::write_i2c(uint8_t reg, uint8_t *src, uint32_t len) {
+    i2c_write_blocking(_comm_bus, I2C_ADDR, &reg, 1, true);
+    return i2c_write_blocking(_comm_bus, I2C_ADDR, src, len, false);
+}
+
+int Otos::read_i2c(uint8_t reg, uint8_t *buf, uint32_t len) {
+    i2c_write_blocking(_comm_bus, I2C_ADDR, &reg, 1, true);
+    return i2c_read_blocking(_comm_bus, I2C_ADDR, buf, len, false);
 }

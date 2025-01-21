@@ -98,10 +98,10 @@
 #define PAA5160_BURST_DATA_10 0x5A
 #define PAA5160_BURST_DATA_11 0x5B
 
-#define I2C_PORT i2c0
-#define I2C_ADDR 0x69
-#define I2C_SDA_PIN 0
-#define I2C_SCL_PIN 1
+#define I2C_PORT i2c1
+#define I2C_ADDR 0x17
+#define I2C_SDA_PIN 4
+#define I2C_SCL_PIN 5
 
 #define MIN_SCALAR 0.872f
 #define MAX_SCALAR 1.127f
@@ -109,46 +109,46 @@
 // conversion factors
 #define METER_TO_INCH 39.37f
 #define INCH_TO_METER 0.0254f
-#define RADIAN_TO_DEGREE 57.296f
-#define DEGREE_TO_RADIAN 0.0174f
+#define RADIAN_TO_DEGREE 57.2958f
+#define DEGREE_TO_RADIAN 0.0174533f
 
 #define M_PI 3.14159265358979323846
 
 // Conversion factor for the linear position registers. 16-bit signed
 // registers with a max value of 10 meters (394 inches) gives a resolution
 // of about 0.0003 mps (0.012 ips)
-#define METER_TO_INT16 (32768.0f / 10.0f)
-#define INT16_TO_METER (1.0f / METER_TO_INT16)
+#define METER_TO_INT16 3276.8f
+#define INT16_TO_METER 0.00030517578125f
 
 // Conversion factor for the linear velocity registers. 16-bit signed
 // registers with a max value of 5 mps (197 ips) gives a resolution of about
 // 0.00015 mps (0.006 ips)
-#define MPS_TO_INT16 (32768.0f / 5.0f)
-#define INT16_TO_MPS (1.0f / MPS_TO_INT16)
+#define MPS_TO_INT16 6553.6f
+#define INT16_TO_MPS 0.000152587890625f
 
 // Conversion factor for the linear acceleration registers. 16-bit signed
 // registers with a max value of 157 mps^2 (16 g) gives a resolution of
 // about 0.0048 mps^2 (0.49 mg)
-#define MPSS_TO_INT16 (32768.0f / (16.0f * 9.80665f))
-#define INT16_TO_MPSS (1.0f / MPSS_TO_INT16)
+#define MPSS_TO_INT16 208.8378804178797f
+#define INT16_TO_MPSS 0.0047884033203125f
 
 // Conversion factor for the angular position registers. 16-bit signed
 // registers with a max value of pi radians (180 degrees) gives a resolution
 // of about 0.00096 radians (0.0055 degrees)
-#define RAD_TO_INT16 (32768.0f / M_PI)
-#define INT16_TO_RAD (1.0f / RAD_TO_INT16)
+#define RAD_TO_INT16 10430.37835047045f
+#define INT16_TO_RAD 9.587379924285257e-5f
 
 // Conversion factor for the angular velocity registers. 16-bit signed
 // registers with a max value of 34.9 rps (2000 dps) gives a resolution of
 // about 0.0011 rps (0.061 degrees per second)
-#define RPS_TO_INT16 (32768.0f / (2000.0f * DEGREE_TO_RADIAN))
-#define INT16_TO_RPS (1.0f / RPS_TO_INT16)
+#define RPS_TO_INT16 938.733649223929f
+#define INT16_TO_RPS 0.0010652648925781f
 
 // Conversion factor for the angular acceleration registers. 16-bit signed
 // registers with a max value of 3141 rps^2 (180000 dps^2) gives a
 // resolution of about 0.096 rps^2 (5.5 dps^2)
-#define RPSS_TO_INT16 (32768.0f / (M_PI * 1000.0f))
-#define INT16_TO_RPSS (1.0f / RPSS_TO_INT16)
+#define RPSS_TO_INT16 10.43037835047045f
+#define INT16_TO_RPSS 0.0958737992428526
 
 typedef struct
 {
@@ -310,7 +310,10 @@ public:
 
     sfeError_t get_pos_vel_acc_and_stddev(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc, otos_pose2d_t &posstddev, otos_pose2d_t &velstddev, otos_pose2d_t &accstddev);
 
-protected:
+// protected:
+    int write_i2c(uint8_t reg, uint8_t *src, uint32_t len);
+    int read_i2c(uint8_t reg, uint8_t *buf, uint32_t len);
+
     sfeError_t read_pose_regs(uint8_t reg, otos_pose2d_t &pose, float raw_to_xy, float raw_to_h);
 
     sfeError_t write_pose_regs(uint8_t reg, otos_pose2d_t &pose, float xy_to_raw, float h_to_raw);
