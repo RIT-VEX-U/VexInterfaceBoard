@@ -322,8 +322,24 @@ void Otos::pose_to_regs(uint8_t *raw, otos_pose2d_t &pose, float xy_to_raw, floa
 }
 
 int Otos::write_i2c(uint8_t reg, uint8_t *src, uint32_t len) {
-    i2c_write_blocking(_comm_bus, I2C_ADDR, &reg, 1, true);
-    return i2c_write_blocking(_comm_bus, I2C_ADDR, src, len, false);
+    int num_bytes_read = 0;
+    uint8_t msg[len + 1];
+
+    // Check to make sure caller is sending 1 or more bytes
+    if (len < 1) {
+        return 0;
+    }
+
+    // Append register address to front of data packet
+    msg[0] = reg;
+    for (int i = 0; i < len; i++) {
+        msg[i + 1] = src[i];
+    }
+
+    // Write data to register(s) over I2C
+    i2c_write_blocking(i2c0, I2C_ADDR, msg, (len + 1), false);
+
+    return num_bytes_read;
 }
 
 int Otos::read_i2c(uint8_t reg, uint8_t *buf, uint32_t len) {

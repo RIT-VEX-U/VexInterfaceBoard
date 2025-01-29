@@ -82,18 +82,13 @@ int main() {
     }
 
     printf("otos connected\n");
-    printf("ensure otos is flat and stationary, then enter any key to calibrate imu\n");
 
     sleep_ms(2000);
 
-    printf("calibrating imu");
-    otos.calibrate_imu();
     otos.set_linear_unit(kInches);
+    otos.set_linear_scalar(1.094391244870041);
     otos.set_angular_unit(kDegrees);
-    otos.reset_tracking();
-    otos.calibrate_imu();
-    
-
+    otos.set_angular_scalar(0.9979735592449776);
     otos.reset_tracking();
 
     gpio_set_function(0, UART_FUNCSEL_NUM(uart0, 0));
@@ -110,14 +105,17 @@ int main() {
     
 
     uart_init(uart0, 115200);
-    // uart_set_fifo_enabled(uart0, true);
+    sleep_ms(1000);
 
     uint8_t initial_config_cobs[26];
     printf("waiting...\n");
+    while (!uart_is_readable(uart0)) {
+        sleep_ms(5);
+    }
     uart_read_blocking(uart0, initial_config_cobs, sizeof(initial_config_cobs));
     printf("received\n");
     uint8_t initial_config[25];
-    cobsDecode(initial_config, sizeof(initial_config), initial_config_cobs);
+    cobsDecode(initial_config_cobs, sizeof(initial_config_cobs), initial_config);
 
     gpio_put(2, 1);
 
@@ -142,7 +140,6 @@ int main() {
     printf("offset  %f %f %f\n", offset_x, offset_y, offset_rot);
 
     
-    otos.calibrate_imu(255, true);
     otos_pose2d_t offset_pose{offset_x, offset_y, offset_rot};
     otos.set_offset(offset_pose);
     
@@ -150,16 +147,29 @@ int main() {
     otos_pose2d_t initial_pose{initial_x, initial_y, initial_rot};
     otos.set_position(initial_pose);
     otos.calibrate_imu(255, true);
+
+
     printf("calibrated\n");
 
 
     while (true) {
         otos_pose2d_t pose;
-        otos.get_position(pose);
-        uint8_t raw[sizeof(pose)];
-        uint8_t encoded[sizeof(pose) + 1];
+        otos_pose2d_t vel;
+        otos_pose2d_t acc;
+        otos.get_pos_vel_acc(pose, vel, acc);
+        float velf = sqrt(vel.x * vel.x + vel.y * vel.y);
+        float avelf = vel.h;
+        float accf = sqrt(acc.x * acc.x + acc.y * acc.y);
+        float aaccf = acc.h;
 
-        memcpy(raw, &pose, sizeof(pose));
+        uint8_t raw[sizeof(pose) + 16];
+        uint8_t encoded[sizeof(pose) + 16 + 1];
+
+        memcpy(&raw[0], &pose, sizeof(pose));
+        memcpy(&raw[12], &velf, sizeof(velf));
+        memcpy(&raw[16], &avelf, sizeof(avelf));
+        memcpy(&raw[20], &accf, sizeof(accf));
+        memcpy(&raw[24], &aaccf, sizeof(aaccf));
 
         
         cobsEncode(raw, sizeof(raw), encoded);
@@ -185,7 +195,7 @@ int main() {
 
 
 
-        sleep_ms(100);
+        sleep_ms(10);
     }
     
     return 0;
