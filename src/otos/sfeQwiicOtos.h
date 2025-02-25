@@ -306,6 +306,10 @@ public:
 
     sfeError_t get_pos_vel_acc(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc);
 
+    sfeError_t get_pos_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h);
+    sfeError_t get_vel_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h);
+    sfeError_t get_acc_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h);
+
     sfeError_t get_pos_vel_acc_stddev(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc);
 
     sfeError_t get_pos_vel_acc_and_stddev(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc, otos_pose2d_t &posstddev, otos_pose2d_t &velstddev, otos_pose2d_t &accstddev);

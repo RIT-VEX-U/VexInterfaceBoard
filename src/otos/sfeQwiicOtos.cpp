@@ -240,6 +240,48 @@ sfeError_t Otos::get_pos_vel_acc(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_po
     return kErrOkay;
 }
 
+sfeError_t Otos::get_pos_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h) {
+    uint8_t raw[6];
+    size_t bytes_read;
+    int err = read_i2c(POSITIONX_L, raw, 6);
+
+    if (err == -1 || err != 6) {
+        return kErrFail;
+    }
+
+    raw_x = (raw[1] << 8) | raw[0];
+    raw_y = (raw[3] << 8) | raw[2];
+    raw_h = (raw[5] << 8) | raw[4];
+}
+
+sfeError_t Otos::get_vel_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h) {
+    uint8_t raw[6];
+    size_t bytes_read;
+    int err = read_i2c(VELOCITYX_L, raw, 6);
+
+    if (err == -1 || err != 6) {
+        return kErrFail;
+    }
+
+    raw_x = (raw[1] << 8) | raw[0];
+    raw_y = (raw[3] << 8) | raw[2];
+    raw_h = (raw[5] << 8) | raw[4];
+}
+
+sfeError_t Otos::get_acc_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h) {
+    uint8_t raw[6];
+    size_t bytes_read;
+    int err = read_i2c(ACCELERATIONX_L, raw, 6);
+
+    if (err == -1 || err != 6) {
+        return kErrFail;
+    }
+
+    raw_x = (raw[1] << 8) | raw[0];
+    raw_y = (raw[3] << 8) | raw[2];
+    raw_h = (raw[5] << 8) | raw[4];
+}
+
 sfeError_t Otos::get_pos_vel_acc_stddev(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc) {
     uint8_t raw[18];
     size_t bytes_read;
