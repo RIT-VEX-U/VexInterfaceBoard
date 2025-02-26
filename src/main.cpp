@@ -2,6 +2,7 @@
 #include "pico.h"
 #include <iostream>
 #include <cstring>
+#include <bit>
 #include "otos/OtosDevice.h"
 
 OtosDevice otos;
@@ -104,12 +105,15 @@ int main() {
     otos.set_linear_unit(kInches);
     otos.set_angular_unit(kDegrees);
 
+    otos.calibrate_imu();
+
     gpio_set_function(0, UART_FUNCSEL_NUM(uart0, 0));
     gpio_set_function(1, UART_FUNCSEL_NUM(uart0, 1));
 
-    // set rs485 transciever to tx
+    // set rs485 transciever to rx
     gpio_init(2);
     gpio_set_dir(2, GPIO_OUT);
+    set_uart_mode(2, RX);
 
     uart_init(uart0, 115200);
 
@@ -122,11 +126,11 @@ int main() {
     uint8_t calib_samples[1];
     uint8_t calib_samples_cobs[2];
 
-    uint8_t linear_scalar[2];
-    uint8_t linear_scalar_cobs[3];
+    uint8_t linear_scalar[4];
+    uint8_t linear_scalar_cobs[5];
 
-    uint8_t angular_scalar[2];
-    uint8_t angular_scalar_cobs[3];
+    uint8_t angular_scalar[4];
+    uint8_t angular_scalar_cobs[5];
 
     uint8_t success[1];
     uint8_t success_cobs[2];

@@ -252,6 +252,8 @@ sfeError_t Otos::get_pos_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h) {
     raw_x = (raw[1] << 8) | raw[0];
     raw_y = (raw[3] << 8) | raw[2];
     raw_h = (raw[5] << 8) | raw[4];
+
+    return kErrOkay;
 }
 
 sfeError_t Otos::get_vel_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h) {
@@ -266,6 +268,8 @@ sfeError_t Otos::get_vel_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h) {
     raw_x = (raw[1] << 8) | raw[0];
     raw_y = (raw[3] << 8) | raw[2];
     raw_h = (raw[5] << 8) | raw[4];
+
+    return kErrOkay;
 }
 
 sfeError_t Otos::get_acc_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h) {
@@ -280,6 +284,8 @@ sfeError_t Otos::get_acc_raw(int16_t &raw_x, int16_t &raw_y, int16_t &raw_h) {
     raw_x = (raw[1] << 8) | raw[0];
     raw_y = (raw[3] << 8) | raw[2];
     raw_h = (raw[5] << 8) | raw[4];
+
+    return kErrOkay;
 }
 
 sfeError_t Otos::get_pos_vel_acc_stddev(otos_pose2d_t &pos, otos_pose2d_t &vel, otos_pose2d_t &acc) {
